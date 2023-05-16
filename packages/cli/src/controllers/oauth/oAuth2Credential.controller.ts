@@ -1,4 +1,5 @@
-import ClientOAuth2 from 'client-oauth2';
+import type { ClientOAuth2Options } from '@n8n/client-oauth2';
+import { ClientOAuth2 } from '@n8n/client-oauth2';
 import Csrf from 'csrf';
 import { Response } from 'express';
 import { Repository } from 'typeorm';
@@ -8,7 +9,7 @@ import set from 'lodash.set';
 import split from 'lodash.split';
 import unset from 'lodash.unset';
 import { resolve } from 'path';
-import { ILogger } from 'n8n-workflow';
+import { ILogger, jsonStringify } from 'n8n-workflow';
 import { TEMPLATES_DIR } from '@/constants';
 import { Config } from '@/config';
 import { Get, RestController } from '@/decorators';
@@ -63,7 +64,7 @@ export class OAuth2CredentialController extends AbstractOAuthController {
 		};
 		const stateEncodedStr = Buffer.from(JSON.stringify(state)).toString('base64');
 
-		const oAuthOptions: ClientOAuth2.Options = {
+		const oAuthOptions: ClientOAuth2Options = {
 			clientId: get(oauthCredentials, 'clientId') as string,
 			clientSecret: get(oauthCredentials, 'clientSecret', '') as string,
 			accessTokenUri: get(oauthCredentials, 'accessTokenUrl', '') as string,
@@ -113,9 +114,8 @@ export class OAuth2CredentialController extends AbstractOAuthController {
 			if (!code || !stateEncoded) {
 				return this.renderCallbackError(
 					res,
-					`Insufficient parameters for OAuth2 callback. Received following query parameters: ${JSON.stringify(
-						req.query,
-					)}`,
+					'Insufficient parameters for OAuth2 callback.',
+					`Received following query parameters: ${JSON.stringify(req.query)}`,
 				);
 			}
 
@@ -156,11 +156,11 @@ export class OAuth2CredentialController extends AbstractOAuthController {
 				return this.renderCallbackError(res, errorMessage);
 			}
 
-			let options = {};
+			let options: Partial<ClientOAuth2Options> = {};
 
-			const oAuth2Parameters = {
+			const oAuth2Parameters: ClientOAuth2Options = {
 				clientId: get(oauthCredentials, 'clientId') as string,
-				clientSecret: get(oauthCredentials, 'clientSecret', '') as string | undefined,
+				clientSecret: get(oauthCredentials, 'clientSecret', '') as string,
 				accessTokenUri: get(oauthCredentials, 'accessTokenUrl', '') as string,
 				authorizationUri: get(oauthCredentials, 'authUrl', '') as string,
 				redirectUri: `${this.baseUrl}/callback`,
@@ -174,6 +174,7 @@ export class OAuth2CredentialController extends AbstractOAuthController {
 						client_secret: get(oauthCredentials, 'clientSecret', '') as string,
 					},
 				};
+				// @ts-ignore
 				delete oAuth2Parameters.clientSecret;
 			}
 
@@ -184,7 +185,7 @@ export class OAuth2CredentialController extends AbstractOAuthController {
 			const queryParameters = req.originalUrl.split('?').splice(1, 1).join('');
 
 			const oauthToken = await oAuthObj.code.getToken(
-				`${oAuth2Parameters.redirectUri}?${queryParameters}`,
+				`${oAuth2Parameters.redirectUri as string}?${queryParameters}`,
 				options,
 			);
 
@@ -222,11 +223,12 @@ export class OAuth2CredentialController extends AbstractOAuthController {
 
 			return res.sendFile(resolve(TEMPLATES_DIR, 'oauth-callback.html'));
 		} catch (error) {
-			return this.renderCallbackError(res, (error as Error).message);
+			const { message, body } = error as Error & { body?: unknown };
+			return this.renderCallbackError(res, message, body ? jsonStringify(body) : undefined);
 		}
 	}
 
-	private renderCallbackError(res: Response, errorMessage: string) {
-		res.render('oauth-error-callback', { error: { message: errorMessage } });
+	private renderCallbackError(res: Response, message: string, reason?: string) {
+		res.render('oauth-error-callback', { error: { message, reason } });
 	}
 }
