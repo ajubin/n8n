@@ -239,6 +239,7 @@ const WorkflowsView = defineComponent({
 	},
 	mounted() {
 		this.setFiltersFromQueryString();
+		console.log('mounted');
 
 		void this.usersStore.showPersonalizationSurvey();
 
@@ -284,6 +285,7 @@ const WorkflowsView = defineComponent({
 			filters: { tags: string[]; search: string; status: string | boolean },
 			matches: boolean,
 		): boolean {
+			console.log({ resource, filters, matches });
 			if (this.settingsStore.areTagsEnabled && filters.tags.length > 0) {
 				matches =
 					matches &&

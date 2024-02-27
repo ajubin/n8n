@@ -198,6 +198,7 @@ import { useUsersStore } from '@/stores/users.store';
 import type { N8nInput, DatatableColumn } from 'n8n-design-system';
 import { useI18n } from '@/composables/useI18n';
 import { useDebounce } from '@/composables/useDebounce';
+import Fuse from 'fuse.js';
 
 export interface IResource {
 	id: string;
@@ -329,7 +330,21 @@ export default defineComponent({
 		filterKeys(): string[] {
 			return Object.keys(this.filtersModel);
 		},
+
 		filteredAndSortedSubviewResources(): IResource[] {
+			const fuse = new Fuse(this.subviewResources, {
+				includeScore: true,
+				threshold: 0.6,
+				keys: ['name'],
+			});
+
+			console.log(fuse);
+			let fuzzyMatchingResult = [];
+			if (this.filtersModel.search) {
+				const res = fuse.search(this.filtersModel.search);
+				fuzzyMatchingResult = res.map((result) => result.item.id);
+			}
+
 			const filtered: IResource[] = this.subviewResources.filter((resource: IResource) => {
 				let matches = true;
 
@@ -345,9 +360,14 @@ export default defineComponent({
 				}
 
 				if (this.filtersModel.search) {
-					const searchString = this.filtersModel.search.toLowerCase();
+					// TODO: c'est peut être ici qu'il faut faire du fuzzy search
+					// Pistes potentielles: du fuzzy finding àla fzf
+					// https://stackoverflow.com/questions/491148/best-fuzzy-matching-algorithm
+					// https://www.baeldung.com/cs/fuzzy-search-algorithm
+					// ou avec une Lib "Fuse.js"
 
-					matches = matches && this.displayName(resource).toLowerCase().includes(searchString);
+					// @ts-expect-error temporary
+					matches = matches && fuzzyMatchingResult.includes(resource.id);
 				}
 
 				if (this.additionalFiltersHandler) {

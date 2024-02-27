@@ -1,20 +1,6 @@
 <template>
 	<div>
-		<AuthView
-			v-if="!showMfaView"
-			:form="FORM_CONFIG"
-			:form-loading="loading"
-			:with-sso="true"
-			data-test-id="signin-form"
-			@submit="onEmailPasswordSubmitted"
-		/>
-		<MfaView
-			v-if="showMfaView"
-			:report-error="reportError"
-			@submit="onMFASubmitted"
-			@onBackClick="onBackClick"
-			@onFormChanged="onFormChanged"
-		/>
+		<h1>gros con</h1>
 	</div>
 </template>
 

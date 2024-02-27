@@ -57,6 +57,7 @@
     "fast-json-stable-stringify": "^2.1.0",
     "file-saver": "^2.0.2",
     "flatted": "^3.2.4",
+    "fuse.js": "^7.0.0",
     "humanize-duration": "^3.27.2",
     "jsonpath": "^1.1.1",
     "lodash-es": "^4.17.21",

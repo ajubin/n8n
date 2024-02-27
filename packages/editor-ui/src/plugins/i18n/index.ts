@@ -643,6 +643,7 @@ export const i18n: I18nClass = new I18nClass();
 
 export const I18nPlugin: Plugin<{}> = {
 	async install(app) {
+		console.log('I18nPlugin install', app);
 		locale.i18n((key: string, options?: { interpolate: Record<string, unknown> }) =>
 			i18nInstance.global.t(key, options?.interpolate || {}),
 		);

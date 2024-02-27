@@ -1,3 +1,4 @@
+console.log('beg');
 import { createApp } from 'vue';
 
 import 'vue-json-pretty/lib/styles.css';
@@ -24,7 +25,6 @@ import { JsPlumbPlugin } from '@/plugins/jsplumb';
 import { ChartJSPlugin } from '@/plugins/chartjs';
 
 const pinia = createPinia();
-
 const app = createApp(App);
 
 app.use(TelemetryPlugin);
@@ -40,6 +40,7 @@ app.use(i18nInstance);
 app.use(ChartJSPlugin);
 
 app.mount('#app');
+console.log('main.ts');
 
 if (!import.meta.env.PROD) {
 	// Make sure that we get all error messages properly displayed

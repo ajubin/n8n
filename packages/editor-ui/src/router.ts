@@ -397,7 +397,6 @@ export const routes = [
 			telemetry: {
 				pageCategory: 'auth',
 			},
-			middleware: ['guest'],
 		},
 	},
 	{
